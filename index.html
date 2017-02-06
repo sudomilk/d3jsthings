@@ -1,71 +1,37 @@
-<html>
-<head>
-    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
-    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js"></script>
-</head>
-<body>
-  <div id="chart">
-  </div>
-  <script type="text/javascript">
-  var w = 960,
-      h = 500;
+<!DOCTYPE html>
+<svg width="960" height="500"></svg>
+<script src="bower_components/d3/d3.min.js"></script>
+<script>
 
-  var vertices = d3.range(100).map(function(d) {
-    return [Math.random() * w, Math.random() * h];
-  });
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    angles = d3.range(0, 2 * Math.PI, Math.PI / 200);
 
-  var svg = d3.select("#chart")
-    .append("svg:svg")
-      .attr("width", w)
-      .attr("height", h);
-  var paths, points, clips;
-  clips = svg.append("svg:g").attr("id", "point-clips");
-  points = svg.append("svg:g").attr("id", "points");
-  paths = svg.append("svg:g").attr("id", "point-paths");
-
-  clips.selectAll("clipPath")
-      .data(vertices)
-    .enter().append("svg:clipPath")
-      .attr("id", function(d, i) { return "clip-"+i;})
-    .append("svg:circle")
-      .attr('cx', function(d) { return d[0]; })
-      .attr('cy', function(d) { return d[1]; })
-      .attr('r', 20);
-
-  paths.selectAll("path")
-      .data(d3.geom.voronoi(vertices))
-    .enter().append("svg:path")
-      .attr("d", function(d) { return "M" + d.join(",") + "Z"; })
-      .attr("id", function(d,i) {
-        return "path-"+i; })
-      .attr("clip-path", function(d,i) { return "url(#clip-"+i+")"; })
-      .style("fill", d3.rgb(230, 230, 230))
-      .style('fill-opacity', 0.4)
-      .style("stroke", d3.rgb(200,200,200));
-
-  paths.selectAll("path")
-    .on("mouseover", function(d, i) {
-      d3.select(this)
-        .style('fill', d3.rgb(31, 120, 180));
-      svg.select('circle#point-'+i)
-        .style('fill', d3.rgb(31, 120, 180))
-    })
-    .on("mouseout", function(d, i) {
-      d3.select(this)
-        .style("fill", d3.rgb(230, 230, 230));
-      svg.select('circle#point-'+i)
-        .style('fill', 'black')
+var path = svg.append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+    .attr("fill", "none")
+    .attr("stroke-width", 10)
+    .attr("stroke-linejoin", "round")
+  .selectAll("path")
+  .data(["cyan", "magenta", "yellow"])
+  .enter().append("path")
+    .attr("stroke", function(d) { return d; })
+    .style("mix-blend-mode", "lighten")
+    .datum(function(d, i) {
+      return d3.radialLine()
+          .curve(d3.curveLinearClosed)
+          .angle(function(a) { return a; })
+          .radius(function(a) {
+            var t = d3.now() / 1000;
+            return 200 + Math.cos(a * 8 - i * 2 * Math.PI / 3 + t) * Math.pow((1 + Math.cos(a - t)) / 2, 3) * 32;
+          });
     });
 
-  points.selectAll("circle")
-      .data(vertices)
-    .enter().append("svg:circle")
-      .attr("id", function(d, i) {
-        return "point-"+i; })
-      .attr("transform", function(d) { return "translate(" + d + ")"; })
-      .attr("r", 2)
-      .attr('stroke', 'none');
+d3.timer(function() {
+  path.attr("d", function(d) {
+    return d(angles);
+  });
+});
 
-  </script>
-</body>
-</html>
+</script>
