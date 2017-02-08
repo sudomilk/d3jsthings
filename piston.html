@@ -3,11 +3,11 @@
 <script src="bower_components/d3/d3.min.js"></script>
 <script>
 
-var size = 700,
+var size = 500,
     radius = size / 10,
     trackLength = 1 * ((radius * 2) - size) / 2,
     trackCenter = size / 2,
-    timeDilation = size * 3;
+    timeDilation = size * 2;
 
 var svg = d3.select("svg")
     .attr("width", size)
@@ -15,23 +15,28 @@ var svg = d3.select("svg")
 
 var line = svg.append("line")
     .attr("stroke-width", size * .01)
-    .attr("stroke", "black")
+    .attr("stroke", "cyan")
     .attr("x1", "0%")
     .attr("y1", "50%")
     .attr("x2", "100%")
     .attr("y2", "50%");
 
 var circle = svg.selectAll("circle")
-    .data([1])
+    .data([["magenta", -1], ["yellow", 1]])
     .enter().append("circle")
     .attr("cy", size / 2)
-    .attr("r", radius);
+    .attr("r", radius)
+    .attr("fill", function(d) {return d[0]})
+    .style("mix-blend-mode", "darken");
 
 function movement() {
-  return Math.cos(d3.now() / timeDilation)
-}
+  return Math.cos(d3.now() / timeDilation);
+};
 
 d3.timer(function() {
-  circle.attr("cx", (trackLength * movement()) + trackCenter)
+  circle.attr("cx", function(d) {
+    return d[1] * trackLength * movement() + trackCenter;
+  });
+  //circle.attr("cx", trackLength * movement() + trackCenter);
 });
 </script>
